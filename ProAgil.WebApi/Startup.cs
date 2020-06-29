@@ -30,6 +30,7 @@ namespace ProAgil.WebApi
                 x.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
                 
             services.AddControllers();
+            services.AddCors();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
