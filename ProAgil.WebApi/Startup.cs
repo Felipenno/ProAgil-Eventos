@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using ProAgil.WebApi.Data;
+using ProAgil.Repositorio;
 
 namespace ProAgil.WebApi
 {
@@ -26,7 +26,7 @@ namespace ProAgil.WebApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<DataContext>(x => 
+            services.AddDbContext<ProAgilContext>(x => 
                 x.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
                 
             services.AddControllers();
