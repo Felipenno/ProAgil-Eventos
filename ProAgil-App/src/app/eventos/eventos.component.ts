@@ -31,6 +31,10 @@ export class EventosComponent implements OnInit {
   registerForm: FormGroup;
   bodyDeletarEvento = '';
 
+  fileNameToUpdate: string;
+
+  file: File;
+
   FILTRO_LISTA: string;
 
   constructor(
@@ -39,11 +43,11 @@ export class EventosComponent implements OnInit {
     private formBuilder: FormBuilder,
     private localService: BsLocaleService,
     private toastr: ToastrService
-    ) {
-      this.localService.use('pt-br');
+  ) {
+    this.localService.use('pt-br');
   }
 
-  get filtroLista(): string{
+  get filtroLista(): string {
     return this.FILTRO_LISTA;
   }
   set filtroLista(value: string) {
@@ -56,14 +60,16 @@ export class EventosComponent implements OnInit {
     this.validation();
   }
 
-  editarEvento(evento: Evento, template: any): void{
+  editarEvento(evento: Evento, template: any): void {
     this.modoSalvar = 'put';
     this.openModal(template);
-    this.evento = evento;
-    this.registerForm.patchValue(evento);
+    this.evento = Object.assign({}, evento);
+    this.fileNameToUpdate = evento.imagemURL.toString();
+    this.evento.imagemURL = '';
+    this.registerForm.patchValue(this.evento);
   }
 
-  novoEvento(template: any): void{
+  novoEvento(template: any): void {
     this.modoSalvar = 'post';
     this.openModal(template);
   }
@@ -77,13 +83,13 @@ export class EventosComponent implements OnInit {
   confirmeDelete(template: any): void {
     this.eventoService.deleteEvento(this.evento.id).subscribe(
       () => {
-          template.hide();
-          this.getEventos();
-          this.toastr.success('Deletado com Sucesso!');
-        }, error => {
-          this.toastr.error(`Erro ao tentar deletar: ${error}`);
-          console.log(error);
-        }
+        template.hide();
+        this.getEventos();
+        this.toastr.success('Deletado com Sucesso!');
+      }, error => {
+        this.toastr.error(`Erro ao tentar deletar: ${error}`);
+        console.log(error);
+      }
     );
   }
 
@@ -92,7 +98,7 @@ export class EventosComponent implements OnInit {
     template.show();
   }
 
-  filtrarEventos(filtrarPor: string): Evento[]{
+  filtrarEventos(filtrarPor: string): Evento[] {
     filtrarPor = filtrarPor.toLocaleLowerCase();
     return this.eventos.filter(
       evento => evento.tema.toLocaleLowerCase().indexOf(filtrarPor) !== -1
@@ -116,11 +122,29 @@ export class EventosComponent implements OnInit {
     });
   }
 
+  onFileChange(event): void {
+    const reader = new FileReader();
+
+    if (event.target.files && event.target.files.length) {
+      this.file = event.target.files;
+      console.log(this.file);
+    }
+  }
+
+  uploadImagem(): void {
+    const nomeArquivo = this.evento.imagemURL.split('\\', 3);
+    this.evento.imagemURL = nomeArquivo[2];
+
+    this.eventoService.postUpload(this.file, nomeArquivo[2]).subscribe();
+  }
+
   salvarAlteracao(template: any): void {
-    if (this.registerForm.valid){
-      if (this.modoSalvar === 'post'){
+    if (this.registerForm.valid) {
+      if (this.modoSalvar === 'post') {
         this.evento = Object.assign({}, this.registerForm.value);
         console.log(this.evento);
+
+        this.uploadImagem();
 
         this.eventoService.postEvento(this.evento).subscribe(
           (novoEvento: Evento) => {
@@ -129,13 +153,16 @@ export class EventosComponent implements OnInit {
             this.getEventos();
             this.toastr.success('Inserido com sucesso!');
           }, error => {
-            this.toastr.error(`Erro ao inserir: ${error}` );
+            this.toastr.error(`Erro ao inserir: ${error}`);
             console.log(error);
           }
         );
-      }else {
-        this.evento = Object.assign({id: this.evento.id}, this.registerForm.value);
+      } else {
+        this.evento = Object.assign({ id: this.evento.id }, this.registerForm.value);
         console.log(this.evento);
+
+        this.uploadImagem();
+
         this.eventoService.putEvento(this.evento).subscribe(
           (novoEvento: Evento) => {
             console.log(novoEvento);
@@ -143,7 +170,7 @@ export class EventosComponent implements OnInit {
             this.getEventos();
             this.toastr.success('Editado com Sucesso!');
           }, error => {
-            this.toastr.error(`Erro ao Editar: ${error}` );
+            this.toastr.error(`Erro ao Editar: ${error}`);
             console.log(error);
           }
         );

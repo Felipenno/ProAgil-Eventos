@@ -9,6 +9,8 @@ using ProAgil.Repositorio;
 using ProAgil.Dominio;
 using AutoMapper;
 using ProAgil.WebApi.Dtos;
+using System.IO;
+using System.Net.Http.Headers;
 
 namespace ProAgil.WebApi.Controllers
 {
@@ -40,6 +42,37 @@ namespace ProAgil.WebApi.Controllers
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"Banco Dados Falhou {ex.Message}");
             }            
+        }
+
+        [HttpPost("upload")]
+        public async Task<IActionResult> Upload()
+        {
+            try
+            {
+                var file = Request.Form.Files[0]; // recebendo o arquivo
+                var folderName = Path.Combine("Resources", "Images"); // diretorio onde o arquivo sera armazenado
+                var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName); //diretorio da aplicação mais onde sera armazenado
+
+                if (file.Length > 0) //verifica se foi recebido um arquivo
+                {
+                    var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName; //verificar o nome do arquivo
+                    var fullPath = Path.Combine(pathToSave, fileName.Replace("\"", " ").Trim()); // retirar aspas duplas e espaços do nome do arquivo
+
+                    using(var stream = new FileStream(fullPath, FileMode.Create)) //stream recebe o nome do arquivo, o caminho onde sera salvo,
+                                                                                  //recebe o conteudo do arquivo e o cria. 
+                    {
+                       await file.CopyToAsync(stream); //sera copiado o arquivo(conteudo) para o stream.
+                    }
+                }
+                
+                return Ok();
+            }
+            catch (System.Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Banco Dados Falhou {ex.Message}");
+            } 
+
+            //return BadRequest("Erro ao tentar realizar upload");           
         }
 
         [HttpGet("{EventoId}")]
