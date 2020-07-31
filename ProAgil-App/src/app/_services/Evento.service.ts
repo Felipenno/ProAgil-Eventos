@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
 import { Evento } from '../_models/Evento';
 
 @Injectable({
@@ -24,23 +23,23 @@ export class EventoService {
     return this.http.get<Evento>(`${this.baseURL}/${id}`);
   }
 
-  postUpload(file: File, name: string): any {
-    const fileToUpload = file[0] as File; // <File> file[0]
+  postUpload(file: File, name: string) {
+    const fileToUplaod = <File>file[0];
     const formData = new FormData();
-    formData.append('file', fileToUpload, name);
+    formData.append('file', fileToUplaod, name);
 
     return this.http.post(`${this.baseURL}/upload`, formData);
   }
 
-  postEvento(evento: Evento): any {
+  postEvento(evento: Evento) {
     return this.http.post(this.baseURL, evento);
   }
 
-  putEvento(evento: Evento): any {
+  putEvento(evento: Evento) {
     return this.http.put(`${this.baseURL}/${evento.id}`, evento);
   }
 
-  deleteEvento(id: number): any{
+  deleteEvento(id: number) {
     return this.http.delete(`${this.baseURL}/${id}`);
   }
 
